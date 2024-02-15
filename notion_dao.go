@@ -12,6 +12,10 @@ import (
 	"github.com/jomei/notionapi"
 )
 
+const (
+	NOTION_TEXT_CONTENT_LENGTH_LIMIT = 2000
+)
+
 type NotionDao struct {
 	feedDatabaseId    notionapi.DatabaseID
 	contentDatabaseId notionapi.DatabaseID
@@ -183,6 +187,7 @@ func GetImageUrl(x string) *string {
 // AddRssItem to Notion database as a single new page with Block content. On failure, no retry is attempted.
 func (dao NotionDao) AddRssItem(item RssItem) error {
 	categories := make([]notionapi.Option, len(item.categories))
+
 	for i, c := range item.categories {
 		categories[i] = notionapi.Option{
 			Name: c,
@@ -206,7 +211,12 @@ func (dao NotionDao) AddRssItem(item RssItem) error {
 		}
 	}
 
-	_, err := dao.client.Page.Create(context.Background(), &notionapi.PageCreateRequest{
+	content := *item.description
+	contentLength := len(content)
+
+	contentSliceLength := min(contentLength, NOTION_TEXT_CONTENT_LENGTH_LIMIT)
+
+	var _, err = dao.client.Page.Create(context.Background(), &notionapi.PageCreateRequest{
 		Parent: notionapi.Parent{
 			Type:       "database_id",
 			DatabaseID: dao.contentDatabaseId,
@@ -226,9 +236,9 @@ func (dao NotionDao) AddRssItem(item RssItem) error {
 				RichText: []notionapi.RichText{{
 					Type: notionapi.ObjectTypeText,
 					Text: notionapi.Text{
-						Content: *item.description,
+						Content: content[:contentSliceLength],
 					},
-					PlainText: *item.description,
+					PlainText: content[:contentSliceLength],
 				},
 				},
 			},

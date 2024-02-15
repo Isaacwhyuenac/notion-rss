@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"golang.org/x/exp/constraints"
+)
 
 // PanicOnErrors prints all non-nil err in errors and panics if there is at least one non-nil
 // error in errors. Otherwise, return normally.
@@ -26,4 +29,11 @@ func PanicOnErrors(errors []error) {
 	if errN == 1 {
 		panic(firstErr)
 	}
+}
+
+func min[T constraints.Ordered](a, b T) T {
+	if a < b {
+		return a
+	}
+	return b
 }
