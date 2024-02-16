@@ -190,7 +190,7 @@ func (dao NotionDao) AddRssItem(item RssItem) error {
 
 	for i, c := range item.categories {
 		categories[i] = notionapi.Option{
-			Name: c,
+			Name: strings.ReplaceAll(c, ",", " "),
 		}
 	}
 	var imageProp *notionapi.Image
@@ -212,6 +212,7 @@ func (dao NotionDao) AddRssItem(item RssItem) error {
 	}
 
 	content := *item.description
+
 	contentLength := len(content)
 
 	contentSliceLength := min(contentLength, NOTION_TEXT_CONTENT_LENGTH_LIMIT)
